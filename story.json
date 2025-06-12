@@ -1,0 +1,22 @@
+{
+  "start": {
+    "text": "PLACEHOLDER_START",
+    "image": "images/bee.jpg",
+    "choices": [
+      {"text": "CHOICE 0", "next": "option0"},
+      {"text": "CHOICE 1", "next": "option1"}
+    ]
+  },
+
+  "option0": {
+    "text": "OPTION 0",
+    "image": "images/doctor.jpg",
+    "choices":[{"text": "OUTCOME 0", "next": "start"}]
+  },
+
+  "option1": {
+    "text": "OPTION 1",
+    "image": "images/hotdog.jpg",
+    "choices":[{"text": "OUTCOME 1", "next": "start"}]
+  }
+}
