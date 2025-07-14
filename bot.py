@@ -17,11 +17,14 @@ def init_bot():
         os.mkdir("progress")
     else: logging.info(f"Directory {os.getcwd()}/progress detected")
     if not os.path.exists("images"):
-        logging.info(f"Creatng {os.getcwd()}/images direcotory")
+        logging.info(f"Creating {os.getcwd()}/images directory")
         os.mkdir("images")
     else: logging.info(f"Directory {os.getcwd()}/images detected")
     load_dotenv()
     TOKEN=os.getenv("OLEG_ENV")
+    if TOKEN is None:
+        logging.critical("Token not found in environment. Edit '.env' file")
+        exit(1)
     return telebot.TeleBot(token=str(TOKEN), parse_mode=None)
     
 def snd_msg(progress, story, bot, ID):
@@ -43,7 +46,7 @@ def snd_msg(progress, story, bot, ID):
             keyboard.add(types.KeyboardButton(text=choice["text"]))
         bot.send_message(ID, story[progress]["text"], reply_markup=keyboard)
     except Exception as e:
-        bot.send_message(ID, f"sry m8, we got {e} here :P")
+        bot.send_message(ID, f"ERROR: {e}")
         logging.error(f"Encountered exception in snd_msg function: {e}")
 
 
