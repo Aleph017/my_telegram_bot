@@ -40,13 +40,17 @@ def load_progress(ID):
     except FileNotFoundError:
         logging.error(f"No savefile found for chat {ID}, returning \"start\"")
         return "start"
-    
+   
+def kb_update(kb, story, progress):
+    for choice in story[progress]["choices"]:
+            kb.add(types.KeyboardButton(text=choice["text"]))
+
+
 def snd_msg(progress, story, bot, ID):
     logging.info(f"Sending a message in chat {ID}")
 
-    keyboard = types.ReplyKeyboardMarkup(
-            resize_keyboard=True)
-
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb_update(keyboard, story, progress)
 
     if "image" in story[progress]:
         try:
@@ -57,13 +61,17 @@ def snd_msg(progress, story, bot, ID):
             logging.error(f"Failed to send image {story[progress]['image']} to chat {ID}")
 
     try:
-        for choice in story[progress]["choices"]:
-            keyboard.add(types.KeyboardButton(text=choice["text"]))
         bot.send_message(ID, story[progress]["text"], reply_markup=keyboard)
     except Exception as e:
         bot.send_message(ID, f"ERROR: {e}")
         logging.error(f"Encountered exception in snd_msg function: {e}")
 
+def fix_KeyError(ID, progress, bot):
+    bot.send_message(ID, f"Story key not found: {progress}")
+    bot.send_message(ID, f"Falling back to 'start'")
+    update_progress(ID, "start")
+    progress = "start"
+    logging.warning(f"KeyError in {ID} chat; falling back to 'start'")
 
 def main():
     logging.basicConfig(level=logging.INFO, 
@@ -89,19 +97,28 @@ def main():
         logging.info(f"Starting the game for chat {message.chat.id}")
         snd_msg(current_progress, story, bot, message.chat.id)
         update_progress(message.chat.id, current_progress)
+
+    @bot.message_handler(commands=["help"])
+    def help(message):
+        ID = message.chat.id
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        current_progress = load_progress(ID)
+
+        if current_progress not in story:
+            fix_KeyError(ID, current_progress, bot)
+            
+        kb_update(keyboard, story, current_progress)
+        
+        bot.send_message(ID, f"how's it goin lad?", reply_markup=keyboard)
         
     @bot.message_handler(func=lambda message: True)
     def send_message(message):
         ID = message.chat.id
         logging.info(f"""Received message \"{message.text}\" from chat {message.chat.id}""")
-        current_progress = load_progress(message.chat.id)
+        current_progress = load_progress(ID)
         
         if current_progress not in story:
-            bot.send_message(ID, f"Story key not found: {current_progress}")
-            bot.send_message(ID, f"Falling back to 'start'")
-            update_progress(ID, "start")
-            current_progress = "start"
-            logging.warning(f"KeyError in {ID} chat; falling back to 'start'")
+            fix_KeyError(ID, current_progress, bot)
 
         for choice in story[current_progress]["choices"]:
             if message.text == choice["text"]:
@@ -113,7 +130,6 @@ def main():
             bot.send_message(ID, "sry m8 not seeing this option")
             logging.error(f"Invalid option \"{message.text}\" in chat {message.chat.id}")
             
-
     bot.polling()
 
 if __name__ == "__main__":
