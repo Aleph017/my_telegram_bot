@@ -1,5 +1,5 @@
 {
-  "_comment": "This is an example story.json file"
+  "_comment": "This is an example story.json file",
   "start": {
     "text": "PLACEHOLDER_START",
     "image": "images/bee.jpg",
