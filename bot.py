@@ -16,6 +16,10 @@ def init_bot():
         logging.info(f"Creating {os.getcwd()}/progress directory")
         os.mkdir("progress")
     else: logging.info(f"Directory {os.getcwd()}/progress detected")
+    if not os.path.exists("images"):
+        logging.info(f"Creatng {os.getcwd()}/images direcotory")
+        os.mkdir("images")
+    else: logging.info(f"Directory {os.getcwd()}/images detected")
     load_dotenv()
     TOKEN=os.getenv("OLEG_ENV")
     return telebot.TeleBot(token=str(TOKEN), parse_mode=None)
